@@ -43,7 +43,7 @@ typedef struct {
 } WaveFile;
 
 int wavegen_open_read(WaveFile *wf, const char *fname);
-int wavegen_open_write(WaveFile *wf, const char *);
+int wavegen_open_write(WaveFile *wf, const char *fname);
 int wavegen_close_read(WaveFile *wf);
 int wavegen_close_write(WaveFile *wf);
 
@@ -54,6 +54,6 @@ size_t wavegen_write_stack(WaveFile *wf, void *ptr, size_t len);
 
 const char *wavegen_fmt2str(WaveAudioFormat f);
     
-#define wavegen_isopen(wf) (wf->f)
+#define wavegen_isopen(wf) ((wf)->f)
 
 #endif /* WAVEGEN_H */
