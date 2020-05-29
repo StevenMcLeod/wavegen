@@ -51,6 +51,8 @@ size_t wavegen_read_il(WaveFile *wf, void *ptr, size_t len);
 size_t wavegen_write_il(WaveFile *wf, void *ptr, size_t len);
 size_t wavegen_read_stack(WaveFile *wf, void *ptr, size_t len);
 size_t wavegen_write_stack(WaveFile *wf, void *ptr, size_t len);
+
+const char *wavegen_fmt2str(WaveAudioFormat f);
     
 #define wavegen_isopen(wf) (wf->f)
 

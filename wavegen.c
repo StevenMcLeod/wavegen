@@ -62,7 +62,7 @@ static inline uint16_t long2le(uint32_t n) {
 /* Does not check size */
 static inline int verify_header(WaveHeader *wh) {
     return (memcmp(wh->ChunkID, RIFF_MAGIC, sizeof(RIFF_MAGIC)) == 0)
-        && (memcmp(wh->ChunkID, WAVE_MAGIC, sizeof(WAVE_MAGIC)) == 0)
+        && (memcmp(wh->Format, WAVE_MAGIC, sizeof(WAVE_MAGIC)) == 0)
 
         && (memcmp(wh->Subchunk1ID, SUB1_MAGIC, sizeof(SUB1_MAGIC)) == 0)
         && (wh->Subchunk1Size == short2le(SUB1_SIZE))
@@ -82,7 +82,8 @@ int wavegen_open_read(WaveFile *wf, const char *fname) {
 
     wf->channels = short2le(theHeader.NumChannels);
     wf->samplerate = long2le(theHeader.SampleRate);
-    wf->samplebytes = short2le(theHeader.BitsPerSample/8);
+    wf->samplebytes = short2le(theHeader.BitsPerSample) / 8;
+    wf->sampleqty = long2le(theHeader.Subchunk2Size) / (wf->samplebytes * wf->channels);
     wf->fmt = short2le(theHeader.AudioFormat);
     return 1;
 }
@@ -127,7 +128,6 @@ int wavegen_close_write(WaveFile *wf) {
 
 size_t wavegen_read_il(WaveFile *wf, void *ptr, size_t len) {
     size_t qty = fread(ptr, wf->samplebytes, len * wf->channels, wf->f);
-    wf->sampleqty += qty;
     return qty;
 }
 
@@ -146,8 +146,6 @@ size_t wavegen_read_stack(WaveFile *wf, void *ptr, size_t len) {
             qty += fread(ptr + (blksize * ch) + (sample * wf->samplebytes), wf->samplebytes, 1, wf->f);
         }
     }
-
-    wf->sampleqty += qty;
 }
 
 size_t wavegen_write_stack(WaveFile *wf, void *ptr, size_t len) {
@@ -162,3 +160,13 @@ size_t wavegen_write_stack(WaveFile *wf, void *ptr, size_t len) {
 
     wf->sampleqty += qty;
 }
+
+const char *wavegen_fmt2str(WaveAudioFormat f) {
+    switch(f) {
+    case WFMT_PCM:  return "16-bit LE PCM";
+    case WFMT_IEEE: return "IEEE 32-bit Float";
+    }
+
+    return NULL;
+}
+
